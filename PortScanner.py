@@ -1,5 +1,40 @@
+"""
+TCP Port Scanner
+
+Author: Aishwary
+
+Description:
+A basic TCP port scanner that:
+- Accepts single or multiple targets
+- Validates IP addresses
+- Resolves domain names to IP addresses
+- Scans ports 1–499
+- Attempts banner grabbing on open ports
+
+For educational purposes only.
+"""
+
 import socket
 from IPy import IP   # Library used to validate whether input is a proper IP address
+
+
+def scan(target):
+    """
+    Initiates scanning process for a given target.
+
+    Parameters:
+    target (str): IP address or domain name
+
+    Process:
+    - Validates or resolves the target
+    - Iterates through ports 1–499
+    - Calls scan_port() for each port
+    """
+    converted_ip = check_ip(target)
+    print('\n' + '[-_0 Scanning Target]' + str(target))
+
+    for port in range(1, 500):
+        scan_port(converted_ip, port)
 
 
 def check_ip(ip):
@@ -31,6 +66,19 @@ def check_ip(ip):
         # This process is called DNS resolution.
 
 
+def get_banner(s):
+    """
+    Attempts to receive service banner from an open port.
+
+    Parameters:
+    s (socket): Active socket connection
+
+    Returns:
+    bytes: Raw banner data (max 1024 bytes)
+    """
+    return s.recv(1024)
+
+
 def scan_port(ipaddress, port):
     """
     This function attempts to connect to a given IP address and port.
@@ -57,7 +105,11 @@ def scan_port(ipaddress, port):
         #    If connect() fails (port closed / timeout / firewall) →
         #    it raises an exception and jumps to except block.
 
-        print('[+] Port ' + str(port) + ' is Open')
+        try:
+            banner = get_banner(sock)
+            print('[+] Open Port ' + str(port) + ' : ' + str(banner.decode().strip('\n')))
+        except:
+            print('[+] Port ' + str(port))
 
     except:
         # Q: When does this block execute?
@@ -67,31 +119,23 @@ def scan_port(ipaddress, port):
         # - Host is unreachable
         # - Connection times out
 
-        print('[-] Port ' + str(port) + ' is Closed')
+        # print('[-] Port ' + str(port) + ' is Closed')
+        pass
 
 
 # ===== MAIN PROGRAM =====
 
-#ipaddress = input('[+] Enter target to scan: ')
 # User enters either:
 # - An IP address (e.g., 192.168.1.1)
 # - A domain name (e.g., google.com)
 
+if __name__ == '__main__':
+    targets = input('[+] Enter Target/s To Scan(split multiple targets with ,): ')
 
-targets=input('[+] Enter Target/s To Scan(split multiple targets with ,): ')
+    if ',' in targets:
+        for ip_add in targets.split(','):
+            scan(ip_add.strip(' '))
+    else:
+        scan(targets)
 
-if ',' in targets:
-    for ip_add in targets.split(','):
-        scan(ip_add.strip(' '))
-else:
-    scan(targets)
-#converted_ip = check_ip(ipaddress)
-# Q: Why store converted_ip?
-# A: Because if user enters a domain name,
-# it gets converted into an IP before scanning.
-
-
-for port in range(75, 85):
-    scan_port(converted_ip, port)
-    # This loop scans ports 75 to 84 (85 is excluded).
-    # For each port, scan_port() attempts a TCP connection.
+# End of Program
