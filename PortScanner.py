@@ -72,12 +72,20 @@ def scan_port(ipaddress, port):
 
 # ===== MAIN PROGRAM =====
 
-ipaddress = input('[+] Enter target to scan: ')
+#ipaddress = input('[+] Enter target to scan: ')
 # User enters either:
 # - An IP address (e.g., 192.168.1.1)
 # - A domain name (e.g., google.com)
 
-converted_ip = check_ip(ipaddress)
+
+targets=input('[+] Enter Target/s To Scan(split multiple targets with ,): ')
+
+if ',' in targets:
+    for ip_add in targets.split(','):
+        scan(ip_add.strip(' '))
+else:
+    scan(targets)
+#converted_ip = check_ip(ipaddress)
 # Q: Why store converted_ip?
 # A: Because if user enters a domain name,
 # it gets converted into an IP before scanning.
